@@ -1,0 +1,17 @@
+services:
+  traefik:
+    extends:
+      file: ./reverse-proxy/traefik.yaml
+      service: traefik
+
+  portainer:
+    extends:
+      file: ./dashboard/portainer.yaml
+      service: portainer
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  portainer_data:
