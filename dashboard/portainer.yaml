@@ -1,10 +1,13 @@
 services:
   portainer:
+    container_name: portainer
     image: portainer/portainer-ee:2.21.2
     command: -H unix:///var/run/docker.sock
     restart: always
     networks:
       - proxy
+    expose:
+      - 9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
