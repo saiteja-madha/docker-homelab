@@ -23,7 +23,7 @@ services:
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
       - --certificatesresolvers.letsencrypt.acme.email=${EMAIL}
-      - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
     ports:
       - "80:80"
@@ -32,7 +32,7 @@ services:
       - proxy
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "../configs/traefik/acme.json:/acme.json"
+      - "traefik_letsencrypt:/letsencrypt"
     labels:
       # Dashboard
       - "traefik.enable=true"
@@ -44,3 +44,6 @@ services:
 networks:
   proxy:
     external: true
+
+volumes:
+  traefik_letsencrypt:
