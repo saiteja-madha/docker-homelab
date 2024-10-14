@@ -9,9 +9,16 @@ services:
       file: ./dashboard/portainer.yaml
       service: portainer
 
+  lavalink:
+    extends:
+      file: ./media/lavalink.yaml
+      service: lavalink
+
 networks:
   proxy:
-    external: true
+    name: proxy
+  lavalink:
+    name: lavalink
 
 volumes:
   traefik_letsencrypt:

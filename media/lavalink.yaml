@@ -1,0 +1,29 @@
+services:
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:3.7.13
+    container_name: lavalink
+    restart: unless-stopped
+    environment:
+      - _JAVA_OPTIONS=-Xmx6G
+      - LAVALINK_SERVER_PASSWORD=${LAVALINK_SERVER_PASSWORD}
+    volumes:
+      - ./../configs/lavalink/application.yml:/opt/Lavalink/application.yml
+      - ./../configs/lavalink/plugins/:/opt/Lavalink/plugins/
+    networks:
+      - lavalink
+      # - proxy
+    expose:
+      - 2333
+    labels:
+      - "traefik.enable=false"
+      - "traefik.http.routers.traefik.rule=Host(`lavalink.${DOMAIN}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+
+volumes:
+  lavalink_logs:
+
+networks:
+  lavalink:
+    name: lavalink
