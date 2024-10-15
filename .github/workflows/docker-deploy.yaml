@@ -15,17 +15,12 @@ jobs:
 
       - name: Deploy to Docker host
         uses: appleboy/ssh-action@master
-        env:
-          HOME_DIR: ${{ env.HOME_DIR }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          envs: HOME_DIR
           script: |
-            echo "Deploying to $HOME_DIR"
-            cd $HOME_DIR
-            ls -la
+            cd docker-homelab
             git pull origin main
             docker-compose pull
             docker-compose up -d --remove-orphans
