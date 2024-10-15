@@ -7,8 +7,8 @@ services:
       - _JAVA_OPTIONS=-Xmx6G
       - LAVALINK_SERVER_PASSWORD=${LAVALINK_SERVER_PASSWORD}
     volumes:
-      - ./../configs/lavalink/application.yml:/opt/Lavalink/application.yml
-      - ./../configs/lavalink/plugins/:/opt/Lavalink/plugins/
+      - ./../configs/lavalink/application.yml:/opt/Lavalink/application.yml:ro
+      - ./../configs/lavalink/plugins/:/opt/Lavalink/plugins/:ro
     networks:
       - lavalink
       # - proxy
@@ -20,9 +20,6 @@ services:
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-
-volumes:
-  lavalink_logs:
 
 networks:
   lavalink:
