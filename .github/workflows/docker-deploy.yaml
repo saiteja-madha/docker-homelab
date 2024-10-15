@@ -22,5 +22,5 @@ jobs:
           script: |
             cd docker-homelab
             git pull origin main
-            docker-compose pull
-            docker-compose up -d --remove-orphans
+            docker compose pull
+            docker compose up -d --remove-orphans
