@@ -1,0 +1,26 @@
+services:
+  strange-api:
+    image: saitejamadha/strange-image-api:1.4.0
+    container_name: strange-api
+    restart: unless-stopped
+    networks:
+      - proxy
+    environment:
+      - PORT=${STRANGE_API_PORT}
+      - AUTHENTICATION=${STRANGE_API_AUTHENTICATION}
+      - MONGO_URL=${STRANGE_API_MONGO_URL}
+      - DISCORD_TOKEN=${STRANGE_API_DISCORD_TOKEN}
+      - DISCORD_SERVER_ID=${STRANGE_API_DISCORD_SERVER_ID}
+      - DISCORD_ROLE_ID=${STRANGE_API_DISCORD_ROLE_ID}
+      - BASE_URL=${STRANGE_API_BASE_URL}
+      - BOT_ID=${STRANGE_API_BOT_ID}
+      - BOT_SECRET=${STRANGE_API_BOT_SECRET}
+      - SESSION_SECRET=${STRANGE_API_SESSION_SECRET}
+      - WEBHOOK_URL=${STRANGE_API_WEBHOOK_URL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.strange-api.rule=Host(`strangeapi.${DOMAIN}`)"
+      - "traefik.http.routers.strange-api.entrypoints=websecure"
+      - "traefik.http.routers.strange-api.service=strange-api"
+      - "traefik.http.routers.strange-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.strange-api.loadbalancer.server.port=${STRANGE_API_PORT}"
