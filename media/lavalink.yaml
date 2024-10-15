@@ -16,10 +16,11 @@ services:
       - 2333
     labels:
       - "traefik.enable=false"
-      - "traefik.http.routers.traefik.rule=Host(`lavalink.${DOMAIN}`)"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.lavalink.rule=Host(`lavalink.${DOMAIN}`)"
+      - "traefik.http.routers.lavalink.entrypoints=websecure"
+      - "traefik.http.routers.lavalink.service=lavalink"
+      - "traefik.http.routers.lavalink.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lavalink.loadbalancer.server.port=2333"
 
 networks:
   lavalink:
