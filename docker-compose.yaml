@@ -24,6 +24,11 @@ services:
       file: ./strange/api.yaml
       service: strange-api
 
+  umami:
+    extends:
+      file: ./analytics/umami.yaml
+      service: umami
+
 networks:
   proxy:
     name: proxy

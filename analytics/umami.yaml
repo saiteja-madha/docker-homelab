@@ -1,0 +1,25 @@
+services:
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami
+    ports:
+      - "3000:3000"
+    networks:
+      - proxy
+    environment:
+      DATABASE_URL: ${UMAMI_DATABASE_URL}
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl https://analytics.${DOMAIN}/api/heartbeat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.analytics.rule=Host(`analytics.${DOMAIN}`)"
+      - "traefik.http.routers.analytics.entrypoints=websecure"
+      - "traefik.http.routers.analytics.service=umami"
+      - "traefik.http.routers.analytics.tls.certresolver=letsencrypt"
+      - "traefik.http.services.analytics.loadbalancer.server.port=${STRANGE_API_PORT}"
