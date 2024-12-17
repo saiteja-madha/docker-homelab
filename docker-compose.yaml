@@ -14,20 +14,21 @@ services:
       file: ./media/lavalink.yaml
       service: lavalink
 
-  strange-bot:
-    extends:
-      file: ./strange/bot.yaml
-      service: strange-bot
-
-  strange-api:
-    extends:
-      file: ./strange/api.yaml
-      service: strange-api
-
   umami:
     extends:
       file: ./analytics/umami.yaml
       service: umami
+
+  # Personal projects
+  strange-bot:
+    extends:
+      file: ./projects/strange-bot.yaml
+      service: strange-bot
+
+  strange-api:
+    extends:
+      file: ./projects/strange-api.yaml
+      service: strange-api
 
 networks:
   proxy:
