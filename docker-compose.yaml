@@ -30,6 +30,11 @@ services:
       file: ./projects/strange-api.yaml
       service: strange-api
 
+  flowbite-admin-dashboard:
+    extends:
+      file: ./projects/flowbite-admin-dashboard.yaml
+      service: flowbite-admin-dashboard
+
 networks:
   proxy:
     name: proxy

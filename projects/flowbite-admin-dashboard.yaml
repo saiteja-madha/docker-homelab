@@ -1,0 +1,16 @@
+services:
+  flowbite-admin-dashboard:
+    image: saitejamadha/flowbite-admin-dashboard-nodejs
+    container_name: flowbite-admin-dashboard
+    restart: unless-stopped
+    networks:
+      - proxy
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.flowbite-admin-dashboard.rule=Host(`flowbite-admin-dashboard.${DOMAIN}`)"
+      - "traefik.http.routers.flowbite-admin-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.flowbite-admin-dashboard.service=flowbite-admin-dashboard"
+      - "traefik.http.routers.flowbite-admin-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.flowbite-admin-dashboard.loadbalancer.server.port=3000"
