@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: "traefik:v3.1.5"
+    image: "traefik:v3.2"
     command:
       - --configFile=/etc/traefik/traefik.yaml
       - certificatesResolvers.letsencrypt.acme.email=${EMAIL}
