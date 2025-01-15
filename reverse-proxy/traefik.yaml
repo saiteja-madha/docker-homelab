@@ -2,9 +2,6 @@ services:
   traefik:
     container_name: traefik
     image: "traefik:v3.3"
-    command:
-      - --configFile=/etc/traefik/traefik.yaml
-      - certificatesResolvers.letsencrypt.acme.email=${EMAIL}
     ports:
       - "80:80"
       - "443:443"
@@ -12,7 +9,6 @@ services:
       - proxy
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./../configs/traefik/config.yaml:/etc/traefik/traefik.yaml"
       - "traefik_letsencrypt:/letsencrypt"
     labels:
       - "traefik.enable=true"
@@ -21,9 +17,36 @@ services:
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
     environment:
+      # Logging
+      - TRAEFIK_LOG_LEVEL=ERROR
+
+      # Enable the dashboard
+      - TRAEFIK_API_DASHBOARD=true
+
+      # Enable Docker as a provider
+      - TRAEFIK_PROVIDERS_DOCKER=true
+      - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+
+      # Web entrypoint & redirection to websecure
+      - TRAEFIK_ENTRYPOINTS_WEB_ADDRESS=:80
+      - TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_TO=websecure
+      - TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME=https
+      - TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS=:443
+
+      # Certificates resolver
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=${EMAIL}
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/letsencrypt/acme.json
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT=web
+
+      # Metrics
+      - TRAEFIK_METRICS_INFLUXDB2_ADDRESS=http://influxdb:8086
       - TRAEFIK_METRICS_INFLUXDB2_ORG=${INFLUXDB_ORG}
       - TRAEFIK_METRICS_INFLUXDB2_BUCKET=${TRAEFIK_INFLUXDB_BUCKET}
       - TRAEFIK_METRICS_INFLUXDB2_TOKEN=${TRAEFIK_INFLUXDB_TOKEN}
+      - TRAEFIK_METRICS_INFLUXDB2_ADDENTRYPOINTSLABELS=true
+      - TRAEFIK_METRICS_INFLUXDB2_ADDROUTERSLABELS=true
+      - TRAEFIK_METRICS_INFLUXDB2_ADDSERVICESLABELS=true
+      - TRAEFIK_METRICS_INFLUXDB2_PUSHINTERVAL=60s
 
 networks:
   proxy:
