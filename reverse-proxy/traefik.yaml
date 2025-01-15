@@ -20,6 +20,10 @@ services:
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+    environment:
+      - TRAEFIK_METRICS_INFLUXDB2_ORG=${INFLUXDB_ORG}
+      - TRAEFIK_METRICS_INFLUXDB2_BUCKET=${TRAEFIK_INFLUXDB_BUCKET}
+      - TRAEFIK_METRICS_INFLUXDB2_TOKEN=${TRAEFIK_INFLUXDB_TOKEN}
 
 networks:
   proxy:

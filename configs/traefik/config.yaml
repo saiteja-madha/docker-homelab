@@ -30,3 +30,12 @@ certificatesResolvers:
       storage: /letsencrypt/acme.json
       httpChallenge:
         entryPoint: web
+
+# Metrics
+metrics:
+  influxDB2:
+    address: http://influxdb:8086
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    pushInterval: 60s
