@@ -19,6 +19,12 @@ services:
       file: ./analytics/umami.yaml
       service: umami
 
+  # Monitoring
+  prometheus:
+    extends:
+      file: ./monitoring/prometheus.yaml
+      service: prometheus
+
   # Personal projects
   strange-bot:
     extends:
@@ -35,12 +41,6 @@ services:
       file: ./projects/flowbite-admin-dashboard.yaml
       service: flowbite-admin-dashboard
 
-  # Databases
-  influxdb:
-    extends:
-      file: ./databases/influx.yaml
-      service: influxdb
-
 networks:
   proxy:
     name: proxy
@@ -51,5 +51,4 @@ volumes:
   traefik_letsencrypt:
   portainer_data:
   strange_bot_logs:
-  influxdb2-data:
-  influxdb2-config:
+  prometheus-data:

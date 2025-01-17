@@ -1,0 +1,26 @@
+services:
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    command:
+      - "--storage.tsdb.retention.time=30d"
+    hostname: prometheus
+    expose:
+      - 9090
+    networks:
+      - proxy
+    volumes:
+      - prometheus-data:/prometheus
+      - ./../configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    labels:
+      - "traefik.enable=false"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+
+volumes:
+  prometheus-data:
+
+networks:
+  proxy:
+    external: true
