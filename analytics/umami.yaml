@@ -20,7 +20,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.analytics.rule=Host(`analytics.${DOMAIN}`)"
       - "traefik.http.routers.analytics.entrypoints=websecure"
-      - "traefik.http.routers.analytics.service=analytics"
       - "traefik.http.routers.analytics.tls.certresolver=letsencrypt"
 
 networks:
