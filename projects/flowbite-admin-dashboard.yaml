@@ -14,3 +14,7 @@ services:
       - "traefik.http.routers.flowbite-admin-dashboard.service=flowbite-admin-dashboard"
       - "traefik.http.routers.flowbite-admin-dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.services.flowbite-admin-dashboard.loadbalancer.server.port=3000"
+
+networks:
+  proxy:
+    external: true

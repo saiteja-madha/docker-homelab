@@ -5,7 +5,6 @@ services:
     restart: unless-stopped
     networks:
       - proxy
-      - lavalink
     volumes:
       - ./../configs/strange-bot/config.js:/usr/src/app/config.js:ro
       - strange_bot_logs:/usr/src/app/logs:rw
@@ -31,7 +30,7 @@ services:
       - "traefik.http.services.strange-bot.loadbalancer.server.port=8080"
 
 networks:
-  lavalink:
+  proxy:
     external: true
 
 volumes:

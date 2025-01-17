@@ -3,6 +3,8 @@ services:
     image: saitejamadha/strange-image-api:1.4.0
     container_name: strange-api
     restart: unless-stopped
+    expose:
+      - ${STRANGE_API_PORT}
     networks:
       - proxy
     environment:
@@ -24,3 +26,7 @@ services:
       - "traefik.http.routers.strange-api.service=strange-api"
       - "traefik.http.routers.strange-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.strange-api.loadbalancer.server.port=${STRANGE_API_PORT}"
+
+networks:
+  proxy:
+    external: true

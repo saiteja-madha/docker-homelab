@@ -2,8 +2,8 @@ services:
   umami:
     image: ghcr.io/umami-software/umami:postgresql-latest
     container_name: umami
-    # ports:
-    #   - "3000:3000"
+    expose:
+      - 3000
     networks:
       - proxy
     environment:
@@ -22,4 +22,7 @@ services:
       - "traefik.http.routers.analytics.entrypoints=websecure"
       - "traefik.http.routers.analytics.service=analytics"
       - "traefik.http.routers.analytics.tls.certresolver=letsencrypt"
-      - "traefik.http.services.analytics.loadbalancer.server.port=${STRANGE_API_PORT}"
+
+networks:
+  proxy:
+    external: true

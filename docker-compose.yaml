@@ -44,8 +44,7 @@ services:
 networks:
   proxy:
     name: proxy
-  lavalink:
-    name: lavalink
+    external: true
 
 volumes:
   traefik_letsencrypt:
