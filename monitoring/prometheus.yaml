@@ -14,10 +14,12 @@ services:
       - prometheus-data:/prometheus
       - ./../configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     labels:
-      - "traefik.enable=false"
+      - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN}`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.prometheus.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${BASIC_AUTH_USERS}"
 
 volumes:
   prometheus-data:
