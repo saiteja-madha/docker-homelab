@@ -1,0 +1,25 @@
+services:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    hostname: grafana
+    expose:
+      - 3000
+    networks:
+      - proxy
+    volumes:
+      - grafana-data:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+    environment:
+      - GF_SERVER_ROOT_URL=https://grafana.${DOMAIN}
+
+volumes:
+  grafana-data:
+
+networks:
+  proxy:
+    external: true

@@ -25,6 +25,16 @@ services:
       file: ./monitoring/prometheus.yaml
       service: prometheus
 
+  grafana:
+    extends:
+      file: ./monitoring/grafana.yaml
+      service: grafana
+
+  node-exporter:
+    extends:
+      file: ./monitoring/node-exporter.yaml
+      service: node-exporter
+
   # Personal projects
   strange-bot:
     extends:
@@ -51,3 +61,4 @@ volumes:
   portainer_data:
   strange_bot_logs:
   prometheus-data:
+  grafana-data:
