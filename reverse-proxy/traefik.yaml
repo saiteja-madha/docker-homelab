@@ -50,6 +50,9 @@ services:
       - TRAEFIK_METRICS_PROMETHEUS_BUCKETS=0.100000, 0.300000, 1.200000, 5.000000
       - TRAEFIK_METRICS_PROMETHEUS_ENTRYPOINT=metrics
 
+      # Auth
+      - BASIC_AUTH_USERS=${BASIC_AUTH_USERS}
+
 networks:
   proxy:
     external: true

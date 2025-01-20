@@ -19,7 +19,6 @@ services:
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.routers.prometheus.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=${BASIC_AUTH_USERS}"
 
 volumes:
   prometheus-data:
