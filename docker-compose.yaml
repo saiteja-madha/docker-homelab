@@ -35,6 +35,11 @@ services:
       file: ./monitoring/node-exporter.yaml
       service: node-exporter
 
+  cadvisor:
+    extends:
+      file: ./monitoring/cadvisor.yaml
+      service: cadvisor
+
   # Personal projects
   strange-bot:
     extends:
