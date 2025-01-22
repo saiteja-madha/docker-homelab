@@ -1,7 +1,8 @@
 services:
   umami:
-    image: ghcr.io/umami-software/umami:postgresql-latest
+    image: ghcr.io/umami-software/umami:postgresql-v2.15.1
     container_name: umami
+    hostname: umami
     expose:
       - 3000
     networks:

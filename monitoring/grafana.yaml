@@ -1,8 +1,9 @@
 services:
   grafana:
     container_name: grafana
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.4.0
     hostname: grafana
+    restart: unless-stopped
     expose:
       - 3000
     networks:

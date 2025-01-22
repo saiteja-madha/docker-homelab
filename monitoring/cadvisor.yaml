@@ -1,8 +1,9 @@
 services:
   cadvisor:
     container_name: cadvisor
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
     hostname: cadvisor
+    restart: unless-stopped
     expose:
       - 8080
     networks:

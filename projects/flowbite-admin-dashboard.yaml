@@ -1,7 +1,8 @@
 services:
   flowbite-admin-dashboard:
-    image: saitejamadha/flowbite-admin-dashboard-nodejs
+    image: saitejamadha/flowbite-admin-dashboard-nodejs:1.0.0
     container_name: flowbite-admin-dashboard
+    hostname: flowbite-admin-dashboard
     restart: unless-stopped
     networks:
       - proxy

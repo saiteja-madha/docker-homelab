@@ -1,7 +1,8 @@
 services:
   prometheus:
     container_name: prometheus
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.1.0
+    restart: unless-stopped
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=30d"

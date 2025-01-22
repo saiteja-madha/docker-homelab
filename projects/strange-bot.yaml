@@ -2,6 +2,7 @@ services:
   strange-bot:
     image: saitejamadha/discord-js-bot:5.5.0
     container_name: strange-bot
+    hostname: strange-bot
     restart: unless-stopped
     networks:
       - proxy

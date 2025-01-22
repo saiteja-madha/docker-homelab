@@ -2,6 +2,7 @@ services:
   strange-api:
     image: saitejamadha/strange-image-api:1.4.0
     container_name: strange-api
+    hostname: strange-api
     restart: unless-stopped
     expose:
       - ${STRANGE_API_PORT}

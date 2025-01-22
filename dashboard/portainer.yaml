@@ -3,6 +3,7 @@ services:
     container_name: portainer
     image: portainer/portainer-ee:2.21.5
     command: -H unix:///var/run/docker.sock
+    hostname: portainer
     restart: always
     networks:
       - proxy

@@ -1,8 +1,9 @@
 services:
   node-exporter:
     container_name: node-exporter
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.8.2
     hostname: node-exporter
+    restart: unless-stopped
     networks:
       - proxy
     expose:
