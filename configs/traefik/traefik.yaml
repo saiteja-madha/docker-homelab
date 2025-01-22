@@ -1,0 +1,52 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# Logging
+log:
+  level: ERROR
+
+# Enable the dashboard
+api:
+  dashboard: true
+
+# Enable Docker as a provider
+providers:
+  docker:
+    exposedByDefault: false
+
+# Entrypoints (HTTP and HTTPS and Metrics)
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+  metrics:
+    address: ":8899"
+
+# Certificates resolver
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web
+
+# Metrics
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5
+    entryPoint: metrics

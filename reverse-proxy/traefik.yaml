@@ -3,12 +3,15 @@ services:
     container_name: traefik
     image: "traefik:v3.3"
     hostname: traefik
+    command:
+      - "--configFile=/etc/traefik/traefik.yaml"
     ports:
       - "80:80"
       - "443:443"
     networks:
       - proxy
     volumes:
+      - "./../configs/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "traefik_letsencrypt:/letsencrypt"
     labels:
@@ -20,37 +23,6 @@ services:
       - "traefik.http.routers.traefik.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=${BASIC_AUTH_USERS}"
     environment:
-      # Logging
-      - TRAEFIK_LOG_LEVEL=ERROR
-
-      # Enable the dashboard
-      - TRAEFIK_API_DASHBOARD=true
-
-      # Enable Docker as a provider
-      - TRAEFIK_PROVIDERS_DOCKER=true
-      - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
-
-      # Web entrypoint & redirection to websecure
-      - TRAEFIK_ENTRYPOINTS_WEB_ADDRESS=:80
-      - TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_TO=websecure
-      - TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME=https
-      - TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS=:443
-
-      # Certificates resolver
-      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=${EMAIL}
-      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/letsencrypt/acme.json
-      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT=web
-
-      # Metrics
-      - TRAEFIK_ENTRYPOINTS_METRICS_ADDRESS=:8899
-      - TRAEFIK_METRICS_PROMETHEUS=true
-      - TRAEFIK_METRICS_PROMETHEUS_ADDENTRYPOINTSLABELS=true
-      - TRAEFIK_METRICS_PROMETHEUS_ADDROUTERSLABELS=true
-      - TRAEFIK_METRICS_PROMETHEUS_ADDSERVICESLABELS=true
-      - TRAEFIK_METRICS_PROMETHEUS_BUCKETS=0.100000, 0.300000, 1.200000, 5.000000
-      - TRAEFIK_METRICS_PROMETHEUS_ENTRYPOINT=metrics
-
-      # Auth
       - BASIC_AUTH_USERS=${BASIC_AUTH_USERS}
 
 networks:
