@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: "traefik:v3.3.2"
+    image: "traefik:v3.3.4"
     hostname: traefik
     command:
       - "--configFile=/etc/traefik/traefik.yaml"
