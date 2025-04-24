@@ -1,7 +1,7 @@
 services:
   cadvisor:
     container_name: cadvisor
-    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
     hostname: cadvisor
     restart: unless-stopped
     expose:

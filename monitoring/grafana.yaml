@@ -1,7 +1,7 @@
 services:
   grafana:
     container_name: grafana
-    image: grafana/grafana:11.4.0
+    image: grafana/grafana:11.6.1
     hostname: grafana
     restart: unless-stopped
     expose:
