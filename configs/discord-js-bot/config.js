@@ -37,8 +37,8 @@ module.exports = {
 
   DASHBOARD: {
     enabled: true, // enable or disable dashboard
-    baseURL: "https://strangebot." + process.env.DOMAIN, // base url
-    failureURL: "https://strangebot." + process.env.DOMAIN, // failure redirect url
+    baseURL: "https://djs-bot." + process.env.DOMAIN, // base url
+    failureURL: "https://djs-bot." + process.env.DOMAIN, // failure redirect url
     port: "8080", // port to run the bot on
   },
   ECONOMY: {

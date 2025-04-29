@@ -41,10 +41,10 @@ services:
       service: cadvisor
 
   # Personal projects
-  strange-bot:
+  discord-js-bot:
     extends:
-      file: ./projects/strange-bot.yaml
-      service: strange-bot
+      file: ./projects/discord-js-bot.yaml
+      service: discord-js-bot
 
   strange-api:
     extends:
@@ -64,6 +64,6 @@ networks:
 volumes:
   traefik_letsencrypt:
   portainer_data:
-  strange_bot_logs:
+  discord_js_bot_logs:
   prometheus-data:
   grafana-data:

@@ -1,0 +1,38 @@
+services:
+  discord-js-bot:
+    image: saitejamadha/discord-js-bot:5.5.0
+    container_name: discord-js-bot
+    hostname: discord-js-bot
+    restart: unless-stopped
+    networks:
+      - proxy
+    volumes:
+      - ./../configs/discord-js-bot/config.js:/usr/src/app/config.js:ro
+      - discord_js_bot_logs:/usr/src/app/logs:rw
+    environment:
+      - DOMAIN=${DOMAIN}
+      - BOT_TOKEN=${DISCORD_JS_BOT_TOKEN}
+      - MONGO_CONNECTION=${DISCORD_JS_BOT_MONGO_CONNECTION}
+      - ERROR_LOGS=${DISCORD_JS_BOT_ERROR_LOGS}
+      - JOIN_LEAVE_LOGS=${DISCORD_JS_BOT_JOIN_LEAVE_LOGS}
+      - BOT_SECRET=${DISCORD_JS_BOT_SECRET}
+      - SESSION_PASSWORD=${DISCORD_JS_BOT_SESSION_PASSWORD}
+      - WEATHERSTACK_KEY=${WEATHERSTACK_KEY}
+      - STRANGE_API_KEY=${STRANGE_API_KEY}
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+      - WEATHERSTACK_KEY=${WEATHERSTACK_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.discord-js-bot.rule=Host(`djs-bot.${DOMAIN}`)"
+      - "traefik.http.routers.discord-js-bot.entrypoints=websecure"
+      - "traefik.http.routers.discord-js-bot.service=discord-js-bot"
+      - "traefik.http.routers.discord-js-bot.tls.certresolver=letsencrypt"
+      - "traefik.http.services.discord-js-bot.loadbalancer.server.port=8080"
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  discord_js_bot_logs:
