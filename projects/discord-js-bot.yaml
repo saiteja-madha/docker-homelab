@@ -1,6 +1,6 @@
 services:
   discord-js-bot:
-    image: saitejamadha/discord-js-bot:5.5.0
+    image: saitejamadha/discord-js-bot:5.6.0
     container_name: discord-js-bot
     hostname: discord-js-bot
     restart: unless-stopped
