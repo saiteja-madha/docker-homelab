@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd docker-homelab
+            cd ${{ secrets.DOCKER_HOMELAB_PATH }}
             git pull origin main
             docker compose pull
             docker compose up -d --remove-orphans --force-recreate
