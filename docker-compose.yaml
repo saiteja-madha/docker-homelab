@@ -56,6 +56,12 @@ services:
       file: ./projects/flowbite-admin-dashboard.yaml
       service: flowbite-admin-dashboard
 
+  # Development
+  code-server:
+    extends:
+      file: ./dev/code-server.yaml
+      service: code-server
+
 networks:
   proxy:
     name: proxy
@@ -67,3 +73,4 @@ volumes:
   discord_js_bot_logs:
   prometheus-data:
   grafana-data:
+  code-server-config:
