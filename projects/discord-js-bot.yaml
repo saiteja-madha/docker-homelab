@@ -10,7 +10,7 @@ services:
       - ./../configs/discord-js-bot/config.js:/usr/src/app/config.js:ro
       - discord_js_bot_logs:/usr/src/app/logs:rw
     environment:
-      - DOMAIN=${DOMAIN}
+      - DOMAIN=${DOMAIN_STRANGE}
       - BOT_TOKEN=${DISCORD_JS_BOT_TOKEN}
       - MONGO_CONNECTION=${DISCORD_JS_BOT_MONGO_CONNECTION}
       - ERROR_LOGS=${DISCORD_JS_BOT_ERROR_LOGS}
@@ -21,10 +21,9 @@ services:
       - STRANGE_API_KEY=${STRANGE_API_KEY}
       - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
       - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
-      - WEATHERSTACK_KEY=${WEATHERSTACK_KEY}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.discord-js-bot.rule=Host(`djs-bot.${DOMAIN}`)"
+      - "traefik.http.routers.discord-js-bot.rule=Host(`${DOMAIN_STRANGE}`)"
       - "traefik.http.routers.discord-js-bot.entrypoints=websecure"
       - "traefik.http.routers.discord-js-bot.service=discord-js-bot"
       - "traefik.http.routers.discord-js-bot.tls.certresolver=letsencrypt"
