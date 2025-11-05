@@ -14,6 +14,11 @@ services:
       file: ./media/lavalink.yaml
       service: lavalink
 
+  qbittorrent:
+    extends:
+      file: ./media/qbittorrent.yaml
+      service: qbittorrent
+
   umami:
     extends:
       file: ./analytics/umami.yaml
@@ -74,3 +79,5 @@ volumes:
   prometheus-data:
   grafana-data:
   code-server-config:
+  qbittorrent_config:
+  qbittorrent_downloads:
