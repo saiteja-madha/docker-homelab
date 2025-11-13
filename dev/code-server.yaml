@@ -1,6 +1,6 @@
 services:
   code-server:
-    image: lscr.io/linuxserver/code-server:4.100.3
+    image: lscr.io/linuxserver/code-server:4.105.1
     container_name: code-server
     hostname: code-server
     restart: unless-stopped
@@ -13,11 +13,13 @@ services:
       # Optional
       - PWA_APPNAME=code-server
 
+      # VSCode Marketplace
+      - EXTENSIONS_GALLERY=${VSCODE_EXTENSIONS_GALLERY}
+
       # Docker Mods
-      # Installed: Python 3, Node.js, pnpm, and VSCode extensions
-      - DOCKER_MODS=linuxserver/mods:code-server-python3|linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-pnpm|linuxserver/mods:code-server-extension-arguments
-      - NODEJS_MOD_VERSION=18
-      - VSCODE_EXTENSION_IDS=ms-python.python|ms-python.black-formatter|PKief.material-icon-theme|esbenp.prettier-vscode|bradlc.vscode-tailwindcss|pflannery.vscode-versionlens
+      - DOCKER_MODS=${VSCODE_DOCKER_MODS}
+      - NODEJS_MOD_VERSION=${VSCODE_NODEJS_MOD_VERSION}
+      - VSCODE_EXTENSION_IDS=${VSCODE_EXTENSION_IDS}
 
     volumes:
       - code-server-config:/config
