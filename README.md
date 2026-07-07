@@ -1,119 +1,79 @@
-# Docker Homelab
+# VPS Infra
 
-My personal Docker Compose-based homelab environment with reverse proxy, dashboard, monitoring, media services, analytics, and more.
+Personal VPS infrastructure setup for a lean homelab-style VPS.
 
-## 🚀 Overview
+## Core Stack
 
-This repository contains a modular Docker Compose setup to create a complete homelab environment. The architecture uses Traefik as the backbone for routing traffic to various services, all manageable through Portainer's intuitive UI.
+| Category | Choice |
+|---|---|
+| OS | Ubuntu 24.04 LTS |
+| Containers | Docker + Compose |
+| Deployment | Dokploy |
+| Server Management | Cockpit |
+| Private Access | Tailscale |
+| Firewall | UFW |
+| Updates | unattended-upgrades |
+| Version Control | GitHub |
 
-### 🛠️ Core Components
+## Access Model
 
-- **Reverse Proxy**
-  - **Traefik**: Modern HTTP reverse proxy and load balancer with automatic SSL
-- **Dashboard**
+Public internet should only expose public apps.
 
-  - **Portainer**: Web-based Docker management UI
+Admin services should be private through Tailscale:
 
-- **Monitoring Stack**
+- SSH
+- Cockpit
+- Dokploy
+- PostgreSQL
+- Redis
 
-  - **Prometheus**: Metrics collection and storage
-  - **Grafana**: Metrics visualization and dashboarding
-  - **Node Exporter**: System metrics collection
-  - **cAdvisor**: Container resource usage metrics
+## Setup Order
 
-- **Media Services**
+Run scripts one by one and verify after each phase:
 
-  - **Lavalink**: Audio player API for Discord bots
-
-- **Analytics**
-
-  - **Umami**: Privacy-focused website analytics
-
-- **Development Tools**
-
-  - **Code Server**: VS Code in the browser
-
-- **Project Environments**
-  - **Discord JS Bot**: Discord bot environment
-  - **Strange API**: API service
-  - **Flowbite Admin Dashboard**: Web dashboard
-
-## 📋 Prerequisites
-
-- Docker (recent version)
-- Docker Compose v2
-- A domain name (for SSL and service access)
-
-## ⚙️ Setup
-
-1. **Clone the Repository**
-
-```sh
-git clone https://github.com/saiteja-madha/docker-homelab.git
-cd docker-homelab
+```bash
+sudo bash scripts/00-base.sh
+sudo bash scripts/01-docker.sh
+sudo bash scripts/02-tailscale.sh
+sudo bash scripts/03-cockpit.sh
+sudo bash scripts/04-ufw.sh
+sudo bash scripts/05-dokploy.sh
 ```
 
-2. **Set Up Environment Variables**
+Do not run everything as one giant installer until you are comfortable recovering the VPS.
 
-```sh
+## Fresh VPS Quick Start
+
+Login as root:
+
+```bash
+ssh root@SERVER_IP
+```
+
+Install minimal bootstrap tools:
+
+```bash
+apt update && apt install -y git curl ca-certificates unzip
+```
+
+Clone or copy this repo, then:
+
+```bash
+cd vps-infra
 cp .env.example .env
+nano .env
+bash scripts/00-base.sh
 ```
 
-Edit the `.env` file with your configuration:
+After `00-base.sh`, test login as your sudo user from your laptop:
 
-- Set your domain name (`DOMAIN`)
-- Configure email for Let's Encrypt (`EMAIL`)
-- Set up authentication credentials (`BASIC_AUTH_USERS`)
-- Configure service-specific variables
-
-3. **Create a Docker Network**
-
-```sh
-docker network create proxy
+```bash
+ssh sai@SERVER_IP
 ```
 
-4. **Deploy the Stack**
+Then continue from the copied repo in the user's home:
 
-Deploy all services:
-
-```sh
-docker compose up -d
+```bash
+cd ~/vps-infra
+sudo bash scripts/01-docker.sh
 ```
-
-Or deploy specific services:
-
-```sh
-docker compose up -d traefik portainer
-```
-
-## 🔧 Maintenance
-
-### Updating Services
-
-To update a specific service:
-
-```sh
-docker compose pull [service]
-docker compose up -d [service]
-```
-
-To update all services:
-
-```sh
-docker compose pull
-docker compose up -d
-```
-
-### Viewing Logs
-
-```sh
-docker compose logs -f [service]
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to submit issues and pull requests to improve this setup.
-
-## 📄 License
-
-This project is licensed under the MIT License.

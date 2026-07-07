@@ -1,2 +1,22 @@
-.vscode/
+# Secrets
 .env
+*.env
+!.env.example
+
+# SSH / keys
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local notes
+notes.local.md
