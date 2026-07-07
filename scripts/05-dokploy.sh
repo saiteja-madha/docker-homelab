@@ -11,7 +11,10 @@ echo "Review Dokploy docs before running this script on production systems."
 echo
 echo "IMPORTANT:"
 echo "Dokploy exposes the dashboard on port 3000."
-echo "This script will add Docker-aware firewall rules to allow port 3000 via Tailscale only."
+echo "This script will:"
+echo "  1. Install Dokploy"
+echo "  2. Advertise the Dokploy Docker subnet through Tailscale"
+echo "  3. Add Docker-aware firewall rules to allow port 3000 via Tailscale only"
 echo
 
 read -r -p "Continue installing Dokploy? [y/N] " answer
@@ -23,6 +26,37 @@ esac
 
 echo "==> Installing Dokploy..."
 curl -sSL https://dokploy.com/install.sh | sh
+
+echo
+echo "==> Detecting Dokploy Docker network subnet..."
+
+DOKPLOY_SUBNET="$(docker network inspect dokploy-network -f '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null || true)"
+
+if [ -z "${DOKPLOY_SUBNET}" ]; then
+  echo "WARNING: Could not detect dokploy-network subnet."
+  echo "You can check it manually later with:"
+  echo "  docker network inspect dokploy-network | grep Subnet"
+else
+  echo "Detected Dokploy subnet: ${DOKPLOY_SUBNET}"
+
+  if command -v tailscale >/dev/null 2>&1; then
+    echo
+    echo "==> Advertising Dokploy Docker subnet through Tailscale..."
+    tailscale up --ssh --advertise-routes="${DOKPLOY_SUBNET}" || {
+      echo
+      echo "WARNING: tailscale up failed."
+      echo "You may need to run this manually:"
+      echo "  sudo tailscale up --ssh --advertise-routes=${DOKPLOY_SUBNET}"
+    }
+
+    echo
+    echo "IMPORTANT:"
+    echo "Go to the Tailscale Admin Console and approve the advertised route:"
+    echo "  ${DOKPLOY_SUBNET}"
+  else
+    echo "WARNING: tailscale command not found. Skipping subnet route advertisement."
+  fi
+fi
 
 echo
 echo "==> Locking Dokploy dashboard to Tailscale only..."
@@ -49,8 +83,15 @@ fi
 echo
 echo "==> Dokploy install command finished."
 echo
-echo "Dokploy should be private via Tailscale:"
-echo "  http://$(tailscale ip -4):3000"
+
+if command -v tailscale >/dev/null 2>&1; then
+  TAILSCALE_IP="$(tailscale ip -4 2>/dev/null || true)"
+  if [ -n "${TAILSCALE_IP}" ]; then
+    echo "Dokploy should be private via Tailscale:"
+    echo "  http://${TAILSCALE_IP}:3000"
+  fi
+fi
+
 echo
-echo "Public access to port 3000 should now be blocked."
+echo "Public access to port 3000 should now be blocked by DOCKER-USER."
 echo "Still recommended: also block port 3000 in your VPS provider firewall."
