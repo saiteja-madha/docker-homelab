@@ -150,7 +150,12 @@ timedatectl set-timezone "${SERVER_TIMEZONE}"
 
 echo "==> Updating system packages..."
 apt-get update
-apt-get upgrade -y
+apt-get --fix-broken install -y
+apt-get upgrade -y || {
+  echo "==> Upgrade failed, attempting to work around package conflicts..."
+  apt-mark hold fwupd libfwupd2 libfwupdplugin5 2>/dev/null || true
+  apt-get upgrade -y
+}
 
 echo "==> Installing base packages..."
 apt-get install -y \
@@ -185,6 +190,24 @@ if id "${VPS_USER}" >/dev/null 2>&1; then
   echo "==> User ${VPS_USER} already exists. Skipping creation."
 else
   adduser --disabled-password --gecos "" "${VPS_USER}"
+
+  while true; do
+    read -r -s -p "Enter password for ${VPS_USER}: " VPS_PASSWORD </dev/tty
+    echo >&2
+    read -r -s -p "Confirm password: " VPS_PASSWORD_CONFIRM </dev/tty
+    echo >&2
+
+    if [ "${#VPS_PASSWORD}" -lt 8 ]; then
+      echo "ERROR: Password must be at least 8 characters." >&2
+    elif [ "${VPS_PASSWORD}" != "${VPS_PASSWORD_CONFIRM}" ]; then
+      echo "ERROR: Passwords do not match." >&2
+    else
+      break
+    fi
+  done
+
+  echo "${VPS_USER}:${VPS_PASSWORD}" | chpasswd
+  unset VPS_PASSWORD VPS_PASSWORD_CONFIRM
 fi
 
 echo "==> Ensuring ${VPS_USER} is in sudo group..."

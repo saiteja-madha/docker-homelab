@@ -136,6 +136,10 @@ else
 fi
 
 if [ "${TAILSCALE_AVAILABLE}" = "true" ]; then
+
+  echo "==> Ensuring Tailscale SSH is allowed on port ${SSH_PORT}..."
+  ufw allow in on tailscale0 to any port "${SSH_PORT}" proto tcp comment 'Tailscale SSH access'
+
   echo "==> Ensuring all inbound traffic over Tailscale is allowed..."
   ufw allow in on tailscale0 comment 'Tailscale inbound'
 else
@@ -158,11 +162,7 @@ NEXT STEP:
 
    ssh -p ${SSH_PORT} user@${TAILSCALE_IP}
 
-2. After Tailscale SSH is confirmed, rerun this script with:
-
-   sudo SSH_PORT=${SSH_PORT} ALLOW_PUBLIC_SSH=false RESET_UFW=true bash 04-ufw.sh
-
-   Or manually remove the public SSH rule after checking:
+2. After Tailscale SSH is confirmed, manually remove the public SSH rule:
 
    sudo ufw status numbered
    sudo ufw delete <rule-number>

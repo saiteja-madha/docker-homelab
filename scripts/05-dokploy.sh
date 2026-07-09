@@ -59,21 +59,70 @@ docker run -d \
 
 docker network connect dokploy-network dokploy-traefik 2>/dev/null || true
 
+echo
+echo "==> Restricting Dokploy dashboard port 3000 to Tailscale only..."
+
+if ! iptables -nL DOCKER-USER >/dev/null 2>&1; then
+  echo "WARNING: DOCKER-USER chain not found. Docker may not be running correctly."
+else
+  # Remove older duplicate copies of these exact rules if present.
+  while iptables -C DOCKER-USER -i tailscale0 -p tcp --dport 3000 -j ACCEPT 2>/dev/null; do
+    iptables -D DOCKER-USER -i tailscale0 -p tcp --dport 3000 -j ACCEPT
+  done
+
+  while iptables -C DOCKER-USER -p tcp --dport 3000 -j DROP 2>/dev/null; do
+    iptables -D DOCKER-USER -p tcp --dport 3000 -j DROP
+  done
+
+  # Order matters: allow Tailscale first, then drop everyone else.
+  iptables -I DOCKER-USER 1 -i tailscale0 -p tcp --dport 3000 -j ACCEPT
+  iptables -I DOCKER-USER 2 -p tcp --dport 3000 -j DROP
+
+  echo "Applied DOCKER-USER rules:"
+  iptables -S DOCKER-USER | grep -- '--dport 3000' || true
+fi
+
+echo
+echo "==> Saving iptables rules for persistence..."
+
+if command -v apt-get >/dev/null 2>&1; then
+  export DEBIAN_FRONTEND=noninteractive
+
+  if ! command -v netfilter-persistent >/dev/null 2>&1; then
+    apt-get update
+    apt-get install -y iptables-persistent
+  fi
+
+  if command -v netfilter-persistent >/dev/null 2>&1; then
+    netfilter-persistent save
+    echo "Saved iptables rules with netfilter-persistent."
+  else
+    echo "WARNING: netfilter-persistent not found. iptables rules may not survive reboot."
+  fi
+else
+  echo "WARNING: apt-get not found. Skipping iptables-persistent install."
+  echo "iptables rules are active now but may not survive reboot."
+fi
+
 if command -v tailscale >/dev/null 2>&1; then
   TAILSCALE_IP="$(tailscale ip -4 2>/dev/null || true)"
   if [ -n "${TAILSCALE_IP}" ]; then
+    echo
     echo "Dokploy should be private via Tailscale:"
     echo "  http://${TAILSCALE_IP}:3000"
   fi
 fi
 
 echo
-echo "Dokploy dashboard is still available on port 3000 unless blocked elsewhere."
-echo "Traefik HTTP/HTTPS is now bound to localhost only:"
+echo "Dokploy dashboard port 3000 is now allowed only via tailscale0 using DOCKER-USER rules."
+echo "Public access to port 3000 should be blocked:"
+echo "  http://PUBLIC_IP:3000"
+echo
+echo "Traefik HTTP/HTTPS is bound to localhost only:"
 echo "  http://127.0.0.1"
 echo "  https://127.0.0.1"
 echo
 echo "Use cloudflared with:"
 echo "  http://127.0.0.1:80"
 echo
-echo "Recommended: block public inbound 3000 in your VPS provider firewall."
+echo "Recommended: also block public inbound 3000 in your VPS provider firewall."
