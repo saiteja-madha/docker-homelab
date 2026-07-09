@@ -1,0 +1,14 @@
+services:
+  dokploy-webhook-proxy:
+    image: nginx:alpine
+    container_name: dokploy-webhook-proxy
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8088:80"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
