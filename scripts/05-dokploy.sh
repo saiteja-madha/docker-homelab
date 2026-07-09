@@ -6,24 +6,6 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-echo "==> Dokploy installer will be run from the official install endpoint."
-echo "Review Dokploy docs before running this script on production systems."
-echo
-echo "IMPORTANT:"
-echo "Dokploy exposes the dashboard on port 3000."
-echo "This script will:"
-echo "  1. Install Dokploy"
-echo "  2. Advertise the Dokploy Docker subnet through Tailscale"
-echo "  3. Add Docker-aware firewall rules to allow port 3000 via Tailscale only"
-echo
-
-read -r -p "Continue installing Dokploy? [y/N] " answer
-
-case "${answer}" in
-  y|Y|yes|YES) ;;
-  *) echo "Aborted."; exit 0 ;;
-esac
-
 echo "==> Installing Dokploy..."
 curl -sSL https://dokploy.com/install.sh | sh
 
@@ -42,11 +24,11 @@ else
   if command -v tailscale >/dev/null 2>&1; then
     echo
     echo "==> Advertising Dokploy Docker subnet through Tailscale..."
-    tailscale up --ssh --advertise-routes="${DOKPLOY_SUBNET}" || {
+    tailscale set --ssh --advertise-routes="${DOKPLOY_SUBNET}" || {
       echo
-      echo "WARNING: tailscale up failed."
+      echo "WARNING: tailscale set failed."
       echo "You may need to run this manually:"
-      echo "  sudo tailscale up --ssh --advertise-routes=${DOKPLOY_SUBNET}"
+      echo "  sudo tailscale set --ssh --advertise-routes=${DOKPLOY_SUBNET}"
     }
 
     echo
@@ -59,30 +41,23 @@ else
 fi
 
 echo
-echo "==> Locking Dokploy dashboard to Tailscale only..."
+echo "==> Recreating Dokploy Traefik with localhost-only bindings..."
 
-# Allow Dokploy dashboard through Tailscale
-iptables -C DOCKER-USER -i tailscale0 -p tcp --dport 3000 -j ACCEPT 2>/dev/null || \
-iptables -I DOCKER-USER 1 -i tailscale0 -p tcp --dport 3000 -j ACCEPT
+docker stop dokploy-traefik 2>/dev/null || true
+docker rm dokploy-traefik 2>/dev/null || true
 
-# Block Dokploy dashboard from public/non-Tailscale interfaces
-iptables -C DOCKER-USER -p tcp --dport 3000 -j DROP 2>/dev/null || \
-iptables -I DOCKER-USER 2 -p tcp --dport 3000 -j DROP
+docker run -d \
+  --name dokploy-traefik \
+  --restart always \
+  -v /etc/dokploy/traefik/traefik.yml:/etc/traefik/traefik.yml \
+  -v /etc/dokploy/traefik/dynamic:/etc/dokploy/traefik/dynamic \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -p 127.0.0.1:80:80/tcp \
+  -p 127.0.0.1:443:443/tcp \
+  -p 127.0.0.1:443:443/udp \
+  traefik:v3.6.7
 
-echo
-echo "==> Saving iptables rules..."
-
-if command -v netfilter-persistent >/dev/null 2>&1; then
-  netfilter-persistent save
-else
-  apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install -y iptables-persistent
-  netfilter-persistent save
-fi
-
-echo
-echo "==> Dokploy install command finished."
-echo
+docker network connect dokploy-network dokploy-traefik 2>/dev/null || true
 
 if command -v tailscale >/dev/null 2>&1; then
   TAILSCALE_IP="$(tailscale ip -4 2>/dev/null || true)"
@@ -93,5 +68,12 @@ if command -v tailscale >/dev/null 2>&1; then
 fi
 
 echo
-echo "Public access to port 3000 should now be blocked by DOCKER-USER."
-echo "Still recommended: also block port 3000 in your VPS provider firewall."
+echo "Dokploy dashboard is still available on port 3000 unless blocked elsewhere."
+echo "Traefik HTTP/HTTPS is now bound to localhost only:"
+echo "  http://127.0.0.1"
+echo "  https://127.0.0.1"
+echo
+echo "Use cloudflared with:"
+echo "  http://127.0.0.1:80"
+echo
+echo "Recommended: block public inbound 3000 in your VPS provider firewall."
