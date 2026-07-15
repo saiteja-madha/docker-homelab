@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 027
 
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
@@ -65,6 +66,26 @@ if command -v tailscale >/dev/null 2>&1; then
   TAILSCALE_IP="$(tailscale ip -4 2>/dev/null | head -n1 || true)"
 fi
 
+case "${ALLOW_PUBLIC_COCKPIT:-false}" in
+  true|TRUE|yes|YES|y|Y|1)
+    ALLOW_PUBLIC_COCKPIT=true
+    ;;
+  false|FALSE|no|NO|n|N|0)
+    ALLOW_PUBLIC_COCKPIT=false
+    ;;
+  *)
+    echo "ERROR: ALLOW_PUBLIC_COCKPIT must be true or false."
+    exit 1
+    ;;
+esac
+
+if [ -z "${TAILSCALE_IP}" ] && [ "${ALLOW_PUBLIC_COCKPIT}" != "true" ]; then
+  echo "ERROR: No Tailscale IPv4 address was detected."
+  echo "Cockpit will not be installed with a public/default bind."
+  echo "Connect Tailscale first, or explicitly set ALLOW_PUBLIC_COCKPIT=true."
+  exit 1
+fi
+
 echo
 echo "==> Cockpit setup summary"
 echo "Port:        ${COCKPIT_PORT}"
@@ -73,7 +94,7 @@ if [ -n "${TAILSCALE_IP}" ]; then
   echo "Bind mode:   Tailscale only"
   echo "Bind IP:     ${TAILSCALE_IP}"
 else
-  echo "Bind mode:   Cockpit default"
+  echo "Bind mode:   Cockpit default (explicitly allowed)"
   echo "Bind IP:     default"
 fi
 
@@ -101,7 +122,8 @@ EOF
 
   echo "==> Cockpit will listen on ${TAILSCALE_IP}:${COCKPIT_PORT}"
 else
-  echo "==> Tailscale IP not found. Removing custom Cockpit bind override if present..."
+  echo "==> Tailscale IP not found; public/default Cockpit binding was explicitly allowed."
+  echo "==> Removing custom Cockpit bind override if present..."
 
   if [ -f "${OVERRIDE_FILE}" ]; then
     rm -f "${OVERRIDE_FILE}"
@@ -129,5 +151,5 @@ echo "Cockpit should be available at:"
 if [ -n "${TAILSCALE_IP}" ]; then
   echo "  https://${TAILSCALE_IP}:${COCKPIT_PORT}"
 else
-  echo "  https://SERVER_IP:9090"
+  echo "  https://SERVER_IP:${COCKPIT_PORT}"
 fi

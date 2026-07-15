@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 027
 
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
@@ -40,6 +41,11 @@ validate_username() {
 
 prompt_required "VPS_USER" "Enter VPS username to add to docker group"
 validate_username "${VPS_USER}"
+
+if [ "${VPS_USER}" = "root" ]; then
+  echo "ERROR: Refusing to add root to the docker group."
+  exit 1
+fi
 
 if ! id "${VPS_USER}" >/dev/null 2>&1; then
   echo "ERROR: User '${VPS_USER}' does not exist."
@@ -128,6 +134,7 @@ docker --version || true
 docker compose version || true
 echo
 echo "Important:"
+echo "Membership in the docker group grants root-equivalent host access."
 echo "Log out and log back in for docker group membership to take effect."
 echo
 echo "Then run:"

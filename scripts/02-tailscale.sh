@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 027
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -15,6 +16,20 @@ prompt_optional_empty() {
 
   if [ -z "${value}" ]; then
     read -r -p "${prompt_text}: " value </dev/tty
+  fi
+
+  printf -v "${var_name}" '%s' "${value}"
+  export "${var_name}"
+}
+
+prompt_secret_optional() {
+  local var_name="$1"
+  local prompt_text="$2"
+  local value="${!var_name:-}"
+
+  if [ -z "${value}" ]; then
+    read -r -s -p "${prompt_text}: " value </dev/tty
+    echo >&2
   fi
 
   printf -v "${var_name}" '%s' "${value}"
@@ -52,7 +67,7 @@ is_yes() {
 
 echo "Tailscale auth key is optional."
 echo "Leave it empty if you want to authenticate interactively in the browser."
-prompt_optional_empty "TAILSCALE_AUTH_KEY" "Enter Tailscale auth key, or press Enter to skip"
+prompt_secret_optional "TAILSCALE_AUTH_KEY" "Enter Tailscale auth key, or press Enter to skip"
 
 echo
 echo "Tailscale hostname is optional."
@@ -80,7 +95,11 @@ if command -v tailscale >/dev/null 2>&1; then
   echo "==> Tailscale is already installed. Skipping installer."
 else
   echo "==> Installing Tailscale..."
-  curl -fsSL https://tailscale.com/install.sh | sh
+  TAILSCALE_INSTALLER="$(mktemp /tmp/tailscale-install.XXXXXX.sh)"
+  trap 'rm -f "${TAILSCALE_INSTALLER}"' EXIT
+  curl -fsSL https://tailscale.com/install.sh -o "${TAILSCALE_INSTALLER}"
+  chmod 0700 "${TAILSCALE_INSTALLER}"
+  sh "${TAILSCALE_INSTALLER}"
 fi
 
 echo "==> Enabling tailscaled..."
@@ -124,6 +143,8 @@ else
     tailscale up "${UP_ARGS[@]}"
   fi
 fi
+
+unset TAILSCALE_AUTH_KEY
 
 echo
 echo "==> Tailscale status:"

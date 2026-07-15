@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 027
 
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
@@ -9,14 +10,14 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-prompt_required() {
+prompt_secret_required() {
   local var_name="$1"
   local prompt_text="$2"
   local value="${!var_name:-}"
 
   while [ -z "${value}" ]; do
-    read -r -p "${prompt_text}: " value </dev/tty
-
+    read -r -s -p "${prompt_text}: " value </dev/tty
+    echo >&2
     if [ -z "${value}" ]; then
       echo "ERROR: ${var_name} is required."
     fi
@@ -91,7 +92,7 @@ if [ "${REINSTALL_CLOUDFLARED_SERVICE}" = "true" ]; then
   echo "  Cloudflare Zero Trust → Networks → Tunnels → Create Tunnel"
   echo
 
-  prompt_required "CLOUDFLARED_TOKEN" "Paste Cloudflared tunnel token"
+  prompt_secret_required "CLOUDFLARED_TOKEN" "Paste Cloudflared tunnel token"
 else
   CLOUDFLARED_TOKEN="${CLOUDFLARED_TOKEN:-}"
 fi
@@ -128,8 +129,10 @@ case "${ARCH}" in
 esac
 
 TMP_DEB="$(mktemp /tmp/cloudflared.XXXXXX.deb)"
+trap 'rm -f "${TMP_DEB}"' EXIT
 
 curl -fsSL "${CLOUDFLARED_DEB_URL}" -o "${TMP_DEB}"
+dpkg-deb --info "${TMP_DEB}" >/dev/null
 apt-get install -y "${TMP_DEB}"
 rm -f "${TMP_DEB}"
 
@@ -148,6 +151,7 @@ if [ "${REINSTALL_CLOUDFLARED_SERVICE}" = "true" ]; then
   fi
 
   cloudflared service install "${CLOUDFLARED_TOKEN}"
+  unset CLOUDFLARED_TOKEN
 else
   echo "==> Keeping existing cloudflared service."
 fi

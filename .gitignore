@@ -1,6 +1,7 @@
 # Secrets
 .env
 *.env
+.env.*
 !.env.example
 
 # SSH / keys
@@ -20,3 +21,11 @@ Thumbs.db
 
 # Local notes
 notes.local.md
+
+# Recovery artifacts and local exports
+backups/
+*.sql
+*.sql.gz
+*.dump
+*.tar.gz
+*.zip

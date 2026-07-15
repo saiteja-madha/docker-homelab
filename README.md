@@ -1,35 +1,27 @@
-# VPS Infra
+# VPS Provisioning Toolkit
 
-Personal VPS infrastructure setup for a lean homelab-style VPS.
+Rebuildable host provisioning and disaster-recovery documentation for a private
+Dokploy server on Ubuntu 24.04 LTS.
 
-## Core Stack
+This repository intentionally does **not** contain application stacks,
+application configuration, environment variables, or a deployment workflow.
+Dokploy owns that state and GitHub provides application source code. This repo
+owns the host provisioning and the source configuration for the small webhook
+bridge required by a private Dokploy control plane; Dokploy deploys that bridge.
 
-| Category | Choice |
+## Responsibility boundary
+
+| Owner | Responsibilities |
 |---|---|
-| OS | Ubuntu 24.04 LTS |
-| Containers | Docker + Compose |
-| Deployment | Dokploy |
-| Server Management | Cockpit |
-| Private Access | Tailscale |
-| Firewall | UFW |
-| Updates | unattended-upgrades |
-| Version Control | GitHub |
+| This repository | OS bootstrap, Docker, Tailscale, Cockpit, firewall, Dokploy installation, Cloudflare Tunnel, webhook proxy source, recovery runbooks |
+| Dokploy | Projects, applications, application Compose definitions, webhook proxy deployment, domains, environment/configuration, deployments, backup schedules |
+| GitHub application repositories | Application source and any application-owned deployment files |
+| S3-compatible storage | Dokploy control-plane, database, and named-volume backups |
+| Password manager/off-server records | S3 credentials, Cloudflare access, Tailscale access, GitHub recovery, DNS registrar access |
 
-## Access Model
+## Provisioning order
 
-Public internet should only expose public apps.
-
-Admin services should be private through Tailscale:
-
-- SSH
-- Cockpit
-- Dokploy
-- PostgreSQL
-- Redis
-
-## Setup Order
-
-Run scripts one by one and verify after each phase:
+Clone and review the repository, then run each phase separately:
 
 ```bash
 sudo bash scripts/00-base.sh
@@ -38,42 +30,22 @@ sudo bash scripts/02-tailscale.sh
 sudo bash scripts/03-cockpit.sh
 sudo bash scripts/04-ufw.sh
 sudo bash scripts/05-dokploy.sh
+sudo bash scripts/06-cloudflared.sh
 ```
 
-Do not run everything as one giant installer until you are comfortable recovering the VPS.
+`scripts/07-dev-tools.sh` is optional and must be run as the non-root user.
 
-## Fresh VPS Quick Start
+Do not combine the phases into an unattended one-line installer. Verify access
+after each security-sensitive step and keep the VPS provider console available.
 
-Login as root:
+## Documentation
 
-```bash
-ssh root@SERVER_IP
-```
+- [Architecture](docs/architecture.md)
+- [Provisioning](docs/provisioning.md)
+- [Networking](docs/networking.md)
+- [Backup and recovery](docs/backup-and-recovery.md)
+- [Security](docs/security.md)
+- [Operations](docs/operations.md)
 
-Install minimal bootstrap tools:
-
-```bash
-apt update && apt install -y git curl ca-certificates unzip
-```
-
-Clone or copy this repo, then:
-
-```bash
-cd vps-infra
-cp .env.example .env
-nano .env
-bash scripts/00-base.sh
-```
-
-After `00-base.sh`, test login as your sudo user from your laptop:
-
-```bash
-ssh sai@SERVER_IP
-```
-
-Then continue from the copied repo in the user's home:
-
-```bash
-cd ~/vps-infra
-sudo bash scripts/01-docker.sh
-```
+Start with the [provisioning guide](docs/provisioning.md) for a new server or the
+[recovery runbook](docs/backup-and-recovery.md) after a failure.

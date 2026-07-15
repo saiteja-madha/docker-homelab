@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 027
 
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
@@ -151,11 +152,7 @@ timedatectl set-timezone "${SERVER_TIMEZONE}"
 echo "==> Updating system packages..."
 apt-get update
 apt-get --fix-broken install -y
-apt-get upgrade -y || {
-  echo "==> Upgrade failed, attempting to work around package conflicts..."
-  apt-mark hold fwupd libfwupd2 libfwupdplugin5 2>/dev/null || true
-  apt-get upgrade -y
-}
+apt-get upgrade -y
 
 echo "==> Installing base packages..."
 apt-get install -y \

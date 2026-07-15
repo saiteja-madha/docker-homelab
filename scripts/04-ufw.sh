@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 027
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -74,8 +75,7 @@ bool_value() {
 prompt_optional "SSH_PORT" "Enter SSH port" "22"
 validate_port "${SSH_PORT}"
 
-ALLOW_PUBLIC_SSH="$(bool_value "${ALLOW_PUBLIC_SSH:-true}")"
-RESET_UFW="$(bool_value "${RESET_UFW:-true}")"
+RESET_UFW="$(bool_value "${RESET_UFW:-false}")"
 
 TAILSCALE_AVAILABLE=false
 TAILSCALE_IP=""
@@ -86,6 +86,15 @@ if command -v tailscale >/dev/null 2>&1 && ip link show tailscale0 >/dev/null 2>
   if [ -n "${TAILSCALE_IP}" ]; then
     TAILSCALE_AVAILABLE=true
   fi
+fi
+
+if [ -n "${ALLOW_PUBLIC_SSH:-}" ]; then
+  ALLOW_PUBLIC_SSH="$(bool_value "${ALLOW_PUBLIC_SSH}")"
+elif [ "${TAILSCALE_AVAILABLE}" = "true" ]; then
+  ALLOW_PUBLIC_SSH=false
+else
+  # Fail safe against lockout when Tailscale is not ready.
+  ALLOW_PUBLIC_SSH=true
 fi
 
 echo
