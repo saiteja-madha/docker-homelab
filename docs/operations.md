@@ -14,7 +14,7 @@ systemctl is-active cloudflared cockpit.socket docker tailscaled
 
 Expected properties:
 
-- Dokploy is reachable at `TAILSCALE_IP:3000`, not `PUBLIC_IP:3000`.
+- Every Docker-published port (including `TAILSCALE_IP:3000`) is reachable through Tailscale and unreachable from the public IP.
 - Cockpit listens on the Tailscale address.
 - Traefik listens on loopback ports `80` and `443`.
 - The webhook proxy listens on loopback port `8088`.

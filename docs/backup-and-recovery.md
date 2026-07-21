@@ -104,7 +104,7 @@ the application and webhook hostnames point to the replacement tunnel.
 ### 7. Validate before cutover
 
 - Dokploy is reachable only through Tailscale.
-- The public IP does not expose ports `3000` or `8088`.
+- No Docker-published port is exposed on the public IP.
 - Every expected application is healthy through its public/private path.
 - Database row counts or application-level integrity checks pass.
 - Named-volume data is present.

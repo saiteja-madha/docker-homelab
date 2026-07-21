@@ -140,7 +140,7 @@ The script:
 - installs or updates Dokploy using its official installer;
 - preserves the installer-selected Traefik image while recreating Traefik with
   loopback-only HTTP/HTTPS bindings for Cloudflare Tunnel;
-- restricts public access to dashboard port `3000` using `DOCKER-USER` rules;
+- restricts all Docker-published ports to Tailscale-only access using `DOCKER-USER` rules;
 - persists those rules with `netfilter-persistent`.
 
 Direct Docker-subnet advertisement is disabled by default. Enable it only when
@@ -199,7 +199,7 @@ before use on a sensitive host.
 
 - SSH and Cockpit work through Tailscale.
 - Provider firewall exposes no admin ports.
-- `PUBLIC_IP:3000` is unreachable.
+- Every Docker-published port is unreachable from the public IP.
 - Public application hostnames work through Cloudflare Tunnel.
 - The webhook hostname exposes only the deploy endpoint.
 - Dokploy administrator MFA is enabled.

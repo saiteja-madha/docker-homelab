@@ -127,41 +127,36 @@ docker run -d \
 docker network connect dokploy-network dokploy-traefik 2>/dev/null || true
 
 echo
-echo "==> Restricting Dokploy dashboard port 3000 to Tailscale only..."
+echo "==> Restricting all Docker-published ports to Tailscale only..."
 
 PUBLIC_INTERFACE="$(ip route show default 0.0.0.0/0 | awk 'NR == 1 {print $5}')"
 
 if [ -z "${PUBLIC_INTERFACE}" ]; then
   echo "ERROR: Could not detect the public/default network interface."
-  echo "Refusing to claim the Dokploy dashboard is private."
+  echo "Refusing to claim any port is private."
   exit 1
 elif ! iptables -nL DOCKER-USER >/dev/null 2>&1; then
   echo "ERROR: DOCKER-USER chain not found. Docker may not be running correctly."
   exit 1
 else
-  # Remove older duplicate copies of these exact rules if present.
-  while iptables -C DOCKER-USER -i tailscale0 -p tcp --dport 3000 -j ACCEPT 2>/dev/null; do
-    iptables -D DOCKER-USER -i tailscale0 -p tcp --dport 3000 -j ACCEPT
-  done
-
-  # Remove the legacy broad rule, which could block unrelated containers using port 3000.
-  while iptables -C DOCKER-USER -p tcp --dport 3000 -j DROP 2>/dev/null; do
-    iptables -D DOCKER-USER -p tcp --dport 3000 -j DROP
-  done
-
-  while iptables -C DOCKER-USER -i "${PUBLIC_INTERFACE}" -p tcp --dport 3000 -j DROP 2>/dev/null; do
-    iptables -D DOCKER-USER -i "${PUBLIC_INTERFACE}" -p tcp --dport 3000 -j DROP
-  done
+  # Remove any previous per-port rules from the old approach.
+  RULES="$(iptables -S DOCKER-USER 2>/dev/null | grep -E '(-i tailscale0|-i '"${PUBLIC_INTERFACE}"')' || true)"
+  if [ -n "${RULES}" ]; then
+    echo "${RULES}" | while read -r RULE; do
+      RULE="${RULE#-A }"
+      iptables -D DOCKER-USER ${RULE} 2>/dev/null || true
+    done
+  fi
 
   # Order matters: allow Tailscale first, then drop everyone else.
-  iptables -I DOCKER-USER 1 -i tailscale0 -p tcp --dport 3000 -j ACCEPT
-  iptables -I DOCKER-USER 2 -i "${PUBLIC_INTERFACE}" -p tcp --dport 3000 -j DROP
+  iptables -I DOCKER-USER 1 -i tailscale0 -j ACCEPT
+  iptables -I DOCKER-USER 2 -i "${PUBLIC_INTERFACE}" -j DROP
 
-  iptables -C DOCKER-USER -i tailscale0 -p tcp --dport 3000 -j ACCEPT
-  iptables -C DOCKER-USER -i "${PUBLIC_INTERFACE}" -p tcp --dport 3000 -j DROP
+  iptables -C DOCKER-USER -i tailscale0 -j ACCEPT
+  iptables -C DOCKER-USER -i "${PUBLIC_INTERFACE}" -j DROP
 
   echo "Applied DOCKER-USER rules:"
-  iptables -S DOCKER-USER | grep -- '--dport 3000' || true
+  iptables -S DOCKER-USER | head -6
 fi
 
 echo
@@ -190,15 +185,14 @@ if command -v tailscale >/dev/null 2>&1; then
   TAILSCALE_IP="$(tailscale ip -4 2>/dev/null || true)"
   if [ -n "${TAILSCALE_IP}" ]; then
     echo
-    echo "Dokploy should be private via Tailscale:"
-    echo "  http://${TAILSCALE_IP}:3000"
+    echo "All Docker-published ports are accessible via Tailscale:"
+    echo "  http://${TAILSCALE_IP}:<port>"
   fi
 fi
 
 echo
-echo "Dokploy dashboard port 3000 is now allowed only via tailscale0 using DOCKER-USER rules."
-echo "Public access to port 3000 should be blocked:"
-echo "  http://PUBLIC_IP:3000"
+echo "All Docker-published ports are now restricted to tailscale0 only using DOCKER-USER rules."
+echo "Public access to any Docker-published port is blocked."
 echo
 echo "Traefik HTTP/HTTPS is bound to localhost only:"
 echo "  http://127.0.0.1"
@@ -207,4 +201,4 @@ echo
 echo "Use cloudflared with:"
 echo "  http://127.0.0.1:80"
 echo
-echo "Recommended: also block public inbound 3000 in your VPS provider firewall."
+echo "Recommended: also block public inbound ports in your VPS provider firewall."

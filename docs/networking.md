@@ -10,7 +10,7 @@ public path to Dokploy, Cockpit, SSH, Traefik, or the webhook proxy.
 | ------------------ | ----------------------------------------------------------------- | ------------------------- |
 | Applications       | Internet → Cloudflare → tunnel → `127.0.0.1:80` → Traefik         | None                      |
 | GitHub deployments | GitHub → Cloudflare → tunnel → `127.0.0.1:8088` → proxy → Dokploy | None                      |
-| Dokploy dashboard  | Tailscale → VPS port `3000`                                       | Blocked                   |
+| Any Docker port    | Tailscale → VPS any port                                          | Blocked                   |
 | Cockpit            | Tailscale → bound Tailscale address, normally `9090`              | None                      |
 | SSH                | Tailscale SSH or SSH through `tailscale0`                         | Disabled after validation |
 
@@ -36,10 +36,11 @@ Cloudflare WAF rule using GitHub's current webhook source ranges.
 
 ## Docker and firewall behavior
 
-Docker-published ports can bypass ordinary UFW expectations. Dokploy port `3000`
-is therefore restricted in the `DOCKER-USER` chain on the detected public
-interface, with Tailscale allowed first. Keep the provider firewall as an
-independent outer layer.
+Docker-published ports can bypass ordinary UFW expectations. The `DOCKER-USER`
+chain therefore accepts all inbound traffic from `tailscale0` and drops all
+inbound traffic from the public interface. This keeps every Docker-published
+port — including the Dokploy dashboard and any future database — accessible only
+through Tailscale. Keep the provider firewall as an independent outer layer.
 
 Inspect the effective rules:
 
@@ -98,8 +99,9 @@ Run these tests from a device that is **not** connected to Tailscale:
 ```bash
 curl --connect-timeout 5 http://PUBLIC_IP:3000
 curl --connect-timeout 5 http://PUBLIC_IP:8088
+# Add any Docker-published port to confirm it is also blocked
 ```
 
-Both must fail. Then verify the public app hostname works and the webhook
+All must fail. Then verify the public app hostname works and the webhook
 hostname returns a failure for `/` and for methods other than the configured
 GitHub POST delivery.
